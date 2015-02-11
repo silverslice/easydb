@@ -1,0 +1,29 @@
+{
+    "name": "silverslice/skype-history",
+    "description": "Easy to use mysqli wrapper",
+    "keywords": ["mysqli", "database", "db"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Igor Mikheev",
+            "email": "silver_slice@mail.ru"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "ext-mysqli": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Silverslice\\EasyDb\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Silverslice\\EasyDb\\Tests\\": "tests/"
+        }
+    }
+}
