@@ -152,6 +152,30 @@ class Database
         }, $query);
     }
 
+    /**
+     * Executes one or multiple queries which are concatenated by a semicolon
+     *
+     * @param string $queries
+     * @return bool
+     * @throws Exception
+     */
+    public function multiQuery($queries)
+    {
+        $conn = $this->conn();
+        $res = $conn->multi_query($queries);
+        if (!$res) {
+            throw new Exception($this->conn()->error, $this->conn()->errno);
+        }
+        while ($conn->more_results()) {
+            $res = $conn->next_result();
+            if (!$res) {
+                throw new Exception($this->conn()->error, $this->conn()->errno);
+            }
+        }
+
+        return true;
+    }
+
 
     /**
      * Opens a connection to a mysql server
@@ -169,7 +193,7 @@ class Database
         }
         $res = @$conn->real_connect($options['host'], $options['username'], $options['password'],
             $options['dbname'], $options['port'], $options['socket'], $options['flags']);
-        if (!$res) {
+        if ($res === false) {
             throw new Exception($conn->connect_errno . ': ' . $conn->connect_error);
         }
 
