@@ -30,8 +30,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             INSERT INTO test (id, code, name, price)
             VALUES
               (1, '001', 'Cup', 20.00),
-              (2, '002', 'Plate', 30.50),
-              (3, '003', 'Pan', 40.00)
+              (2, '002', 'Plate', 30.50)
         ");
     }
 
@@ -45,10 +44,19 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
      */
     public function testQueryException()
     {
-        $this->db->multiQuery("
+        $this->db->query("
             INSERT INTO test2 (code, name)
             VALUES ('003', 'Cup2');
         ");
+    }
+
+    public function testPlainQuery()
+    {
+        $this->db->plainQuery("
+            INSERT INTO test (code, name)
+            VALUES ('003', 'Cup2');
+        ");
+        $this->assertEquals(3, $this->getRowCount());
     }
 
     public function testMultiQuery()
@@ -59,14 +67,14 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             INSERT INTO test (code, name)
             VALUES ('004', 'Plate2')
         ");
-        $this->assertEquals(5, $this->getRowCount());
+        $this->assertEquals(4, $this->getRowCount());
 
         // test multiQuery correctly flushes queries
         $this->db->query("
             INSERT INTO test (code, name)
             VALUES ('005', 'Pan2');
         ");
-        $this->assertEquals(6, $this->getRowCount());
+        $this->assertEquals(5, $this->getRowCount());
     }
 
     /**
@@ -143,6 +151,39 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
     {
         $res = $this->db->getAll('SELECT code, name FROM test WHERE id = 100');
         $this->assertSame([], $res);
+    }
+
+    public function testGetColumn()
+    {
+        $res = $this->db->getColumn('SELECT code FROM test WHERE id IN (1, 2)');
+        $expect = ['001', '002'];
+        $this->assertEquals($expect, $res);
+    }
+
+    public function testGetPairs()
+    {
+        $res = $this->db->getPairs('SELECT code, name FROM test WHERE id IN (1, 2)');
+        $expect = [
+            '001' => 'Cup',
+            '002' => 'Plate'
+        ];
+        $this->assertEquals($expect, $res);
+    }
+
+    public function testGetAllKeyed()
+    {
+        $res = $this->db->getAllKeyed('SELECT code, name, price FROM test WHERE id IN (1, 2)');
+        $expect = [
+            '001' => [
+                'name' => 'Cup',
+                'price' => '20.00'
+            ],
+            '002' => [
+                'name' => 'Plate',
+                'price' => '30.50'
+            ],
+        ];
+        $this->assertEquals($expect, $res);
     }
 
 

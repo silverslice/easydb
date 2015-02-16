@@ -224,6 +224,65 @@ class Database
         return $rows;
     }
 
+    /**
+     * Peforms query and fetchs one column in result set as an enumerate array
+     *
+     * @return array
+     */
+    public function getColumn()
+    {
+        /** @var \mysqli_result $res */
+        $res = call_user_func_array([$this, 'query'], func_get_args());
+
+        $rows = array();
+        while ($ar = $res->fetch_row()) {
+            $rows[] = $ar[0];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Peforms query and fetchs key-value pairs in result set.
+     * The key of the associative array is taken from the first column returned by the query.
+     * The value is taken from the second column returned by the query
+     *
+     * @return array
+     */
+    public function getPairs()
+    {
+        /** @var \mysqli_result $res */
+        $res = call_user_func_array([$this, 'query'], func_get_args());
+
+        $rows = array();
+        while ($ar = $res->fetch_row()) {
+            $rows[$ar[0]] = $ar[1];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Peforms query and fetchs key-values pairs in result set.
+     * The key of the associative array is taken from the first column returned by the query.
+     * The value is an array combined from the other columns
+     *
+     * @return array|bool
+     */
+    public function getAllKeyed()
+    {
+        /** @var \mysqli_result $res */
+        $res = call_user_func_array([$this, 'query'], func_get_args());
+
+        $rows = array();
+        while ($ar = $res->fetch_assoc()) {
+            $key = array_shift($ar);
+            $rows[$key] = $ar;
+        }
+
+        return $rows;
+    }
+
 
     /**
      * Opens a connection to a mysql server
@@ -253,7 +312,6 @@ class Database
      * Returns mysqli instance
      *
      * @return \mysqli
-     * @throws \Exception
      */
     protected function conn()
     {
