@@ -176,6 +176,54 @@ class Database
         return true;
     }
 
+    /**
+     * Peforms query and fetchs first cell for the first result row
+     *
+     * @return string|null
+     */
+    public function getOne()
+    {
+        /** @var \mysqli_result $res */
+        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $row = $res->fetch_row();
+        if (is_null($row)) {
+            return null;
+        }
+
+        return $row[0];
+    }
+
+    /**
+     * Peforms query and fetchs first result row as an associative array
+     *
+     * @return array|null
+     */
+    public function getAssoc()
+    {
+        /** @var \mysqli_result $res */
+        $res = call_user_func_array([$this, 'query'], func_get_args());
+
+        return $res->fetch_assoc();
+    }
+
+    /**
+     * Peforms query and fetchs all result rows as an associative array
+     *
+     * @return array
+     */
+    public function getAll()
+    {
+        /** @var \mysqli_result $res */
+        $res = call_user_func_array([$this, 'query'], func_get_args());
+
+        $rows = array();
+        while ($ar = $res->fetch_assoc()) {
+            $rows[] = $ar;
+        }
+
+        return $rows;
+    }
+
 
     /**
      * Opens a connection to a mysql server
