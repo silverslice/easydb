@@ -124,6 +124,21 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         ");
     }
 
+    public function testInsertId()
+    {
+        $this->db->query("
+            INSERT INTO test (code, name)
+            VALUES ('005', 'Pan2');
+        ");
+        $this->assertEquals(3, $this->db->insertId());
+    }
+
+    public function testAffectedRows()
+    {
+        $this->db->query("DELETE FROM test");
+        $this->assertEquals(2, $this->db->affectedRows());
+    }
+
     public function testGetOne()
     {
         $name = $this->db->getOne('SELECT name FROM test WHERE id = 1');

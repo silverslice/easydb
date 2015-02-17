@@ -177,6 +177,26 @@ class Database
     }
 
     /**
+     * Returns the auto generated id used in the last query
+     *
+     * @return mixed
+     */
+    public function insertId()
+    {
+        return $this->conn()->insert_id;
+    }
+
+    /**
+     * Returns the number of affected rows in a previous MySQL operation
+     *
+     * @return mixed
+     */
+    public function affectedRows()
+    {
+        return $this->conn()->affected_rows;
+    }
+
+    /**
      * Peforms query and fetchs first cell for the first result row
      *
      * @return string|null
