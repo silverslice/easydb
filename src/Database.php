@@ -9,8 +9,6 @@ class Database
      */
     protected $db;
 
-    protected $args;
-
     /**
      * @var array Connection options
      */
@@ -113,42 +111,39 @@ class Database
 
         $query = array_shift($params);
 
-        return preg_replace_callback('#\?[isfaep]?#', function($m) use ($params) {
+        return preg_replace_callback('#\?[isfaep]?#', function($m) use (&$params) {
             if (!sizeof($params)) {
-                return "''"; // no more params - insert ''
+                throw new Exception("Count of parameters doesn't correspond to the count of placeholders");
             }
 
             $value = array_shift($params);
-            switch ($m[0]) {
-                case '?': // smart mode
-                    if (is_int($value)) {
-                        return $value;
-                    } elseif (is_null($value)) {
-                        return 'null';
-                    } elseif (is_array($value) && isset($value['db_expr'])) {
-                        return $value['db_expr'];
-                    } else {
-                        return "'" . $this->escape($value) . "'";
-                    }
-                case '?i': return intval($value); // integer
-                case '?s': return "'" . $this->escape($value) . "'"; // string
-                case '?f': return str_replace(',', '.', floatval($value)); // float
-                case '?e': return $this->escape($value); // escape
-                case '?p': return $value; // sql part
-                case '?a': // array
-                    if (!$value) {
-                        return 'NULL';
-                    }
-                    foreach ($value as &$e) {
-                        if (!is_int($e)) {
-                            $e = "'" . $this->escape($e) . "'";
-                        }
-                    }
+            $str = '';
 
-                    return implode(',', $value);
+            switch ($m[0]) {
+                case '?':
+                    $str = $this->quoteSmart($value); // automatically
+                    break;
+                case '?i':
+                    $str = intval($value); // integer
+                    break;
+                case '?s':
+                    $str = $this->quoteString($value); // string
+                    break;
+                case '?f':
+                    $str = str_replace(',', '.', floatval($value)); // float
+                    break;
+                case '?e':
+                    $str = $this->escape($value); // escape
+                    break;
+                case '?p':
+                    $str = $value; // sql part
+                    break;
+                case '?a': // array
+                    $str = $this->quoteArray($value);
+                    break;
             }
 
-            return '';
+            return $str;
         }, $query);
     }
 
@@ -294,9 +289,7 @@ class Database
         $options = $this->options;
         $conn = mysqli_init();
         if ($this->mysqlOptions) {
-            foreach ($this->mysqlOptions as $option => $value) {
-                $conn->options($option, $value);
-            }
+            $this->setOptions($conn, $this->mysqlOptions);
         }
         $res = @$conn->real_connect($options['host'], $options['username'], $options['password'],
             $options['dbname'], $options['port'], $options['socket'], $options['flags']);
@@ -306,6 +299,19 @@ class Database
 
         $this->db = $conn;
         $this->setCharset($options['charset']);
+    }
+
+    /**
+     * Set mysql options
+     *
+     * @param \mysqli $conn
+     * @param array   $options
+     */
+    protected function setOptions(\mysqli $conn, $options)
+    {
+        foreach ($options as $option => $value) {
+            $conn->options($option, $value);
+        }
     }
 
     /**
@@ -322,4 +328,51 @@ class Database
         return $this->db;
     }
 
+    /**
+     * Quotes value automatically
+     *
+     * @param mixed $value
+     * @return string
+     */
+    protected function quoteSmart($value)
+    {
+        if (is_int($value)) {
+            return $value;
+        } elseif (is_null($value)) {
+            return 'null';
+        }
+
+        return $this->quoteString($value);
+    }
+
+    /**
+     * Quotes array
+     *
+     * @param $value
+     * @return string
+     */
+    protected function quoteArray($value)
+    {
+        if (!$value) {
+            return 'NULL';
+        }
+        foreach ($value as &$e) {
+            if (!is_int($e)) {
+                $e = $this->quoteString($e);
+            }
+        }
+
+        return implode(',', $value);
+    }
+
+    /**
+     * Quotes string
+     *
+     * @param $value
+     * @return string
+     */
+    protected function quoteString($value)
+    {
+        return "'" . $this->escape($value) . "'";
+    }
 }

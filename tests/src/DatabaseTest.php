@@ -1,6 +1,7 @@
 <?php
 
 namespace Silverslice\EasyDb\Tests;
+
 use Silverslice\EasyDb\Database;
 use Silverslice\EasyDb\Exception;
 
@@ -42,7 +43,27 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException Exception
      */
-    public function testQueryException()
+    public function testConnectFail()
+    {
+        $options = include __DIR__ . '/../config.php';
+        $options['password'] = uniqid();
+        $conn = new Database($options);
+        $conn->query('SELECT 1');
+    }
+
+    public function testSetMysqlOptions()
+    {
+        $options = include __DIR__ . '/../config.php';
+        $mysql = [MYSQLI_INIT_COMMAND => 'SET AUTOCOMMIT = 0'];
+        $conn = new Database($options, $mysql);
+        $autocommit = $conn->getOne('SELECT @@autocommit');
+        $this->assertEquals(0, $autocommit);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testQueryFail()
     {
         $this->db->query("
             INSERT INTO test2 (code, name)

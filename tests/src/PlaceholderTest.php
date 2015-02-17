@@ -1,7 +1,9 @@
 <?php
 
 namespace Silverslice\EasyDb\Tests;
+
 use Silverslice\EasyDb\Database;
+use Silverslice\EasyDb\Exception;
 
 class PlaceholderTest extends \PHPUnit_Framework_TestCase
 {
@@ -42,7 +44,7 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
 
     public function testDbParsePart()
     {
-        $str = $this->db->parse('test ?e', "go");
+        $str = $this->db->parse('test ?p', "go");
         $this->assertEquals("test go", $str);
     }
 
@@ -50,6 +52,12 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
     {
         $str = $this->db->parse('test (?a)', [1, 2, 3]);
         $this->assertEquals("test (1,2,3)", $str);
+    }
+
+    public function testDbParseArrayEmpty()
+    {
+        $str = $this->db->parse('test IN (?a)', []);
+        $this->assertEquals("test IN (NULL)", $str);
     }
 
     public function testDbParseArrayString()
@@ -74,5 +82,25 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
     {
         $str = $this->db->parse('test ?', null);
         $this->assertEquals("test null", $str);
+    }
+
+    public function testDbParseUnknown()
+    {
+        $str = $this->db->parse('test ?x', 1);
+        $this->assertEquals("test 1x", $str);
+    }
+
+    public function testDbParseSeveral()
+    {
+        $str = $this->db->parse('test ? OR ?i OR (?a)', '1', '2', ['3', '4']);
+        $this->assertEquals("test '1' OR 2 OR ('3','4')", $str);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testNotEnoughParams()
+    {
+        $this->db->parse('test ? OR ?', 1);
     }
 }
