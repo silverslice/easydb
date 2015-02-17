@@ -72,12 +72,20 @@ class Database
     /**
      * Performs a query on the database directly
      *
-     * @param $q
+     * @param $query
      * @return bool | \mysqli_result
+     *
+     * @throws Exception
      */
-    public function plainQuery($q)
+    public function rawQuery($query)
     {
-        return $this->conn()->query($q);
+        $res = $this->conn()->query($query);
+
+        if (!$res) {
+            throw new Exception($this->conn()->error, $this->conn()->errno);
+        }
+
+        return $res;
     }
 
     /**
@@ -87,19 +95,12 @@ class Database
      * param mixed  ...$params  Values to match placeholders in the query
      *
      * @return bool | \mysqli_result
-     *
-     * @throws Exception
      */
     public function query()
     {
         $sql = $this->parse(func_get_args());
-        $res = $this->conn()->query($sql);
 
-        if (!$res) {
-            throw new Exception($this->conn()->error, $this->conn()->errno);
-        }
-
-        return $res;
+        return $this->rawQuery($sql);
     }
 
     /**
@@ -203,8 +204,8 @@ class Database
      */
     public function getOne()
     {
-        /** @var \mysqli_result $res */
-        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $sql = $this->parse(func_get_args());
+        $res = $this->rawQuery($sql);
         $row = $res->fetch_row();
         if (is_null($row)) {
             return null;
@@ -220,8 +221,8 @@ class Database
      */
     public function getAssoc()
     {
-        /** @var \mysqli_result $res */
-        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $sql = $this->parse(func_get_args());
+        $res = $this->rawQuery($sql);
 
         return $res->fetch_assoc();
     }
@@ -233,8 +234,8 @@ class Database
      */
     public function getAll()
     {
-        /** @var \mysqli_result $res */
-        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $sql = $this->parse(func_get_args());
+        $res = $this->rawQuery($sql);
 
         $rows = array();
         while ($ar = $res->fetch_assoc()) {
@@ -251,8 +252,8 @@ class Database
      */
     public function getColumn()
     {
-        /** @var \mysqli_result $res */
-        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $sql = $this->parse(func_get_args());
+        $res = $this->rawQuery($sql);
 
         $rows = array();
         while ($ar = $res->fetch_row()) {
@@ -271,8 +272,8 @@ class Database
      */
     public function getPairs()
     {
-        /** @var \mysqli_result $res */
-        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $sql = $this->parse(func_get_args());
+        $res = $this->rawQuery($sql);
 
         $rows = array();
         while ($ar = $res->fetch_row()) {
@@ -291,8 +292,8 @@ class Database
      */
     public function getAllKeyed()
     {
-        /** @var \mysqli_result $res */
-        $res = call_user_func_array([$this, 'query'], func_get_args());
+        $sql = $this->parse(func_get_args());
+        $res = $this->rawQuery($sql);
 
         $rows = array();
         while ($ar = $res->fetch_assoc()) {

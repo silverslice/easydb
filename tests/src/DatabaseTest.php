@@ -71,9 +71,9 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         ");
     }
 
-    public function testPlainQuery()
+    public function testRawQuery()
     {
-        $this->db->plainQuery("
+        $this->db->rawQuery("
             INSERT INTO test (code, name)
             VALUES ('003', 'Cup2');
         ");
