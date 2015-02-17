@@ -38,6 +38,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         $this->db->query('DROP TABLE IF EXISTS `test`;');
+        $this->db->query('DROP TABLE IF EXISTS `test_no_ai`;');
     }
 
     /**
@@ -220,6 +221,82 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             ],
         ];
         $this->assertEquals($expect, $res);
+    }
+
+    public function testInsert()
+    {
+        $data = [
+            'code' => '003',
+            'name' => 'Pan',
+            'price' => '22.9'
+        ];
+        $id = $this->db->insert('test', $data);
+        $res = $this->db->getAssoc('SELECT code, name, price FROM test WHERE code = ?', $data['code']);
+
+        $this->assertEquals($data, $res);
+        $this->assertEquals(3, $id);
+    }
+
+    public function testUpdate()
+    {
+        $data = [
+            'code' => '002',
+            'name' => 'Pan',
+        ];
+        $num = $this->db->update('test', $data, ['id' => 2]);
+        $res = $this->db->getAssoc('SELECT code, name FROM test WHERE id = 2');
+
+        $this->assertEquals($data, $res);
+        $this->assertEquals(1, $num);
+    }
+
+    public function testUpdateTwoWhere()
+    {
+        $data = [
+            'code' => '002',
+            'name' => 'Pan',
+        ];
+        $num = $this->db->update('test', $data, ['id' => 2, 'code' => '002']);
+        $res = $this->db->getAssoc('SELECT code, name FROM test WHERE id = 2');
+
+        $this->assertEquals($data, $res);
+        $this->assertEquals(1, $num);
+    }
+
+    public function testUpdateEmptyWhere()
+    {
+        $data = [
+            'code' => '002',
+            'name' => 'Pan',
+        ];
+        $num = $this->db->update('test', $data);
+
+        $this->assertEquals(2, $num);
+    }
+
+    public function testInsertNoAutoincrement()
+    {
+        $this->db->multiQuery("
+            DROP TABLE IF EXISTS `test_no_ai`;
+            CREATE TABLE `test_no_ai` (
+             `id` int(11) unsigned NOT NULL,
+             `code` char(15) NOT NULL,
+             `name` varchar(200) NOT NULL,
+             `price` decimal(10,2) unsigned DEFAULT NULL,
+             PRIMARY KEY (`id`),
+             KEY `code` (`code`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $data = [
+            'code' => '003',
+            'name' => 'Pan',
+            'price' => '22.9'
+        ];
+        $id = $this->db->insert('test_no_ai', $data);
+        $res = $this->db->getAssoc('SELECT code, name, price FROM test_no_ai WHERE code = ?', $data['code']);
+
+        $this->assertEquals($data, $res);
+        $this->assertTrue($id);
     }
 
 

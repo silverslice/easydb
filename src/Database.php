@@ -304,6 +304,56 @@ class Database
         return $rows;
     }
 
+    /**
+     * Inserts row into table
+     *
+     * @param string $table  Table name
+     * @param array  $params Column-value pairs
+     * @return mixed Inserted row id or true if table hasn't autoincrement field
+     */
+    public function insert($table, $params)
+    {
+        $sql = "INSERT INTO `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
+        $args[0] = $sql;
+        $args = array_merge($args, array_values($params));
+
+        $sql = $this->parse($args);
+        $this->rawQuery($sql);
+        $res = $this->insertId();
+        if ($res === 0) { // no autoincrement field
+            $res = true;
+        }
+
+        return $res;
+    }
+
+    /**
+     * Updates table rows
+     *
+     * @param string $table  Table name
+     * @param array  $params Column-value pairs
+     * @param array  $where  UPDATE WHERE clause(s). Several conditions will be concatenated with AND keyword
+     * @return int   The number of affected rows
+     */
+    public function update($table, $params, $where = array())
+    {
+        $sql = "UPDATE `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
+        if ($where) {
+            $whereParts = array();
+            foreach ($where as $key => $value) {
+                $whereParts[] = "{$key} = ?";
+            }
+            $sql .= "WHERE " . join(' AND ', $whereParts);
+        }
+        $args[0] = $sql;
+        $args = array_merge($args, array_values($params), array_values($where));
+        $sql = $this->parse($args);
+
+        $this->rawQuery($sql);
+
+        return $this->affectedRows();
+    }
+
 
     /**
      * Opens a connection to a mysql server
