@@ -2,6 +2,11 @@
 
 namespace Silverslice\EasyDb;
 
+/**
+ * Easy wrapper for mysqli extension
+ *
+ * @package Silverslice\EasyDb
+ */
 class Database
 {
     /**
@@ -340,6 +345,8 @@ class Database
             return $value;
         } elseif (is_null($value)) {
             return 'null';
+        } elseif ($value instanceof Expression) {
+            return $value;
         }
 
         return $this->quoteString($value);

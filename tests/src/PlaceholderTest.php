@@ -4,6 +4,7 @@ namespace Silverslice\EasyDb\Tests;
 
 use Silverslice\EasyDb\Database;
 use Silverslice\EasyDb\Exception;
+use Silverslice\EasyDb\Expression;
 
 class PlaceholderTest extends \PHPUnit_Framework_TestCase
 {
@@ -82,6 +83,12 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
     {
         $str = $this->db->parse('test ?', null);
         $this->assertEquals("test null", $str);
+    }
+
+    public function testDbParseExpression()
+    {
+        $str = $this->db->parse('test ?', new Expression('NOW()'));
+        $this->assertEquals("test NOW()", $str);
     }
 
     public function testDbParseUnknown()
