@@ -136,7 +136,7 @@ class Database
                     $str = $this->quoteString($value); // string
                     break;
                 case '?f':
-                    $str = str_replace(',', '.', floatval($value)); // float
+                    $str = $this->quoteFloat($value); // float
                     break;
                 case '?e':
                     $str = $this->escape($value); // escape
@@ -476,7 +476,7 @@ class Database
     /**
      * Quotes array
      *
-     * @param $value
+     * @param array $value
      * @return string
      */
     protected function quoteArray($value)
@@ -496,11 +496,22 @@ class Database
     /**
      * Quotes string
      *
-     * @param $value
+     * @param string $value
      * @return string
      */
     protected function quoteString($value)
     {
         return "'" . $this->escape($value) . "'";
+    }
+
+    /**
+     * Quotes string
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function quoteFloat($value)
+    {
+        return str_replace(',', '.', floatval($value));
     }
 }
