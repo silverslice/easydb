@@ -404,6 +404,55 @@ class Database
         return $this->affectedRows();
     }
 
+    /**
+     * Starts a transaction
+     */
+    public function beginTransaction()
+    {
+        $this->rawQuery('START TRANSACTION');
+    }
+
+    /**
+     * Commits the current transaction
+     */
+    public function commit()
+    {
+        $this->rawQuery('COMMIT');
+    }
+
+    /**
+     * Rolls back current transaction
+     */
+    public function rollback()
+    {
+        $this->rawQuery('ROLLBACK');
+    }
+
+    /**
+     * Runs code in transaction
+     *
+     * @param callable $process  Callback to process
+     * @return bool    True if transaction was successful commited, false otherwise
+     *
+     * @throws Exception
+     */
+    public function transaction($process)
+    {
+        if (!is_callable($process)) {
+            throw new Exception('Invalid argument for process, callable expected');
+        }
+        try {
+            $this->beginTransaction();
+            $process();
+            $this->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->rollback();
+            return false;
+        }
+    }
+
 
     /**
      * Opens a connection to a mysql server
