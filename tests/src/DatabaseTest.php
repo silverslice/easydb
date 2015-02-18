@@ -335,6 +335,25 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $res);
     }
 
+    public function testMultiInsert()
+    {
+        $fields = ['code', 'name', 'price'];
+        $values = [
+            ['003', 'Pan', 7],
+            ['004', 'Spoon', 3.5],
+        ];
+
+        $res = $this->db->multiInsert('test', $fields, $values);
+        $rows = $this->db->getAll("SELECT code, name, price FROM test WHERE code IN ('003', '004')");
+        $expected = [
+            ['code' => '003', 'name' => 'Pan',   'price' => 7],
+            ['code' => '004', 'name' => 'Spoon', 'price' => 3.5],
+        ];
+
+        $this->assertEquals($expected, $rows);
+        $this->assertEquals(2, $res);
+    }
+
 
     protected function getRowCount()
     {

@@ -379,6 +379,31 @@ class Database
         return $this->affectedRows();
     }
 
+    /**
+     * Inserts multiple rows into table
+     *
+     * @param string $table   Table name
+     * @param array  $fields  Field names
+     * @param array  $data    Two-dimensional array with data to insert
+     * @param bool   $ignore  Use or not IGNORE keyword
+     * @return int   The number of affected rows
+     */
+    public function multiInsert($table, $fields, $data, $ignore = false)
+    {
+        $ignore = $ignore ? 'IGNORE' : '';
+        $sql = "INSERT $ignore INTO `$table` (`" . join('`,`', array_values($fields)) . "`) VALUES ";
+        foreach ($data as $i => $row) {
+            foreach ($row as &$field) {
+                $field = $this->quoteSmart($field);
+            }
+            $sql .= '(' . join(', ', $row) . '), ';
+        }
+        $sql = rtrim($sql, ', ');
+        $this->rawQuery($sql);
+
+        return $this->affectedRows();
+    }
+
 
     /**
      * Opens a connection to a mysql server
