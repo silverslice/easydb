@@ -62,6 +62,18 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $autocommit);
     }
 
+    public function testEscape()
+    {
+        $str = $this->db->escape("test '");
+        $this->assertEquals("test \\'", $str);
+
+        $str = $this->db->escape('test "');
+        $this->assertEquals('test \\"', $str);
+
+        $str = $this->db->escape('test \\');
+        $this->assertEquals('test \\\\', $str);
+    }
+
     /**
      * @expectedException Exception
      */
