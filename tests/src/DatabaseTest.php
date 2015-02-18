@@ -237,6 +237,31 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $id);
     }
 
+    public function testInsertNoAutoincrement()
+    {
+        $this->db->multiQuery("
+            DROP TABLE IF EXISTS `test_no_ai`;
+            CREATE TABLE `test_no_ai` (
+             `id` int(11) unsigned NOT NULL,
+             `code` char(15) NOT NULL,
+             `name` varchar(200) NOT NULL,
+             `price` decimal(10,2) unsigned DEFAULT NULL,
+             PRIMARY KEY (`id`),
+             KEY `code` (`code`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $data = [
+            'code' => '003',
+            'name' => 'Pan',
+            'price' => '22.9'
+        ];
+        $id = $this->db->insert('test_no_ai', $data);
+        $res = $this->db->getAssoc('SELECT code, name, price FROM test_no_ai WHERE code = ?', $data['code']);
+
+        $this->assertEquals($data, $res);
+        $this->assertTrue($id);
+    }
+
     public function testUpdate()
     {
         $data = [
@@ -274,29 +299,25 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $num);
     }
 
-    public function testInsertNoAutoincrement()
+    public function testInsertUpdate()
     {
-        $this->db->multiQuery("
-            DROP TABLE IF EXISTS `test_no_ai`;
-            CREATE TABLE `test_no_ai` (
-             `id` int(11) unsigned NOT NULL,
-             `code` char(15) NOT NULL,
-             `name` varchar(200) NOT NULL,
-             `price` decimal(10,2) unsigned DEFAULT NULL,
-             PRIMARY KEY (`id`),
-             KEY `code` (`code`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-        ");
-        $data = [
+        $insert = [
+            'id' => 3,
             'code' => '003',
             'name' => 'Pan',
-            'price' => '22.9'
         ];
-        $id = $this->db->insert('test_no_ai', $data);
-        $res = $this->db->getAssoc('SELECT code, name, price FROM test_no_ai WHERE code = ?', $data['code']);
+        $res = $this->db->insertUpdate('test', $insert);
+        $row = $this->db->getAssoc('SELECT id, code, name FROM test WHERE id = 3');
 
-        $this->assertEquals($data, $res);
-        $this->assertTrue($id);
+        $this->assertEquals($insert, $row);
+        $this->assertEquals(1, $res);
+
+        $update = ['price' => 5];
+        $res = $this->db->insertUpdate('test', $insert, $update);
+        $price = $this->db->getAssoc('SELECT price FROM test WHERE id = 3');
+
+        $this->assertEquals($update, $price);
+        $this->assertEquals(2, $res);
     }
 
 

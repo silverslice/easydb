@@ -348,7 +348,30 @@ class Database
         $args[0] = $sql;
         $args = array_merge($args, array_values($params), array_values($where));
         $sql = $this->parse($args);
+        $this->rawQuery($sql);
 
+        return $this->affectedRows();
+    }
+
+    /**
+     * Inserts or updates table row using INSERT ... ON DUPLICATE KEY UPDATE clause
+     *
+     * @param string  $table   Table name
+     * @param array   $insert  Column-value pairs to insert
+     * @param array   $update  Column-value pairs to update if key already exists in table
+     * @return int    The number of affected rows: 1 if row was inserted or 2 if row was updated
+     */
+    public function insertUpdate($table, $insert, $update = array())
+    {
+        if (!$update) {
+            $update = $insert;
+        }
+
+        $sql = "INSERT INTO `$table` SET `". join('` = ?, `', array_keys($insert)) ."` = ? ON DUPLICATE KEY UPDATE `" .
+            join('` = ?, `', array_keys($update)) . '` = ?';
+        $args[0] = $sql;
+        $args = array_merge($args, array_values($insert), array_values($update));
+        $sql = $this->parse($args);
         $this->rawQuery($sql);
 
         return $this->affectedRows();
