@@ -307,13 +307,15 @@ class Database
     /**
      * Inserts row into table
      *
-     * @param string $table  Table name
-     * @param array  $params Column-value pairs
+     * @param string $table   Table name
+     * @param array  $params  Column-value pairs
+     * @param bool   $ignore  Use or not IGNORE keyword
      * @return mixed Inserted row id or true if table hasn't autoincrement field
      */
-    public function insert($table, $params)
+    public function insert($table, $params, $ignore = false)
     {
-        $sql = "INSERT INTO `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
+        $ignore = $ignore ? 'IGNORE' : '';
+        $sql = "INSERT $ignore INTO `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
         $args[0] = $sql;
         $args = array_merge($args, array_values($params));
 

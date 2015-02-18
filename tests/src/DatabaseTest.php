@@ -262,6 +262,21 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($id);
     }
 
+    public function testInsertIgnore()
+    {
+        $data = [
+            'id' => 1,
+            'code' => '003',
+            'name' => 'Pan',
+            'price' => '22.9'
+        ];
+        $id = $this->db->insert('test', $data, true);
+        $code = $this->db->getOne('SELECT code FROM test WHERE id = 1');
+
+        $this->assertEquals('001', $code);
+        $this->assertTrue($id);
+    }
+
     public function testUpdate()
     {
         $data = [
