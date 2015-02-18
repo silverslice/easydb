@@ -82,7 +82,7 @@ class Database
         $res = $this->conn()->query($query);
 
         if (!$res) {
-            throw new Exception($this->conn()->error, $this->conn()->errno);
+            throw new Exception($query, $this->conn()->errno);
         }
 
         return $res;
@@ -342,10 +342,10 @@ class Database
         $sql = "UPDATE `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
         if ($where) {
             $whereParts = array();
-            foreach ($where as $key => $value) {
-                $whereParts[] = "{$key} = ?";
+            foreach ($where as $field => $value) {
+                $whereParts[] = "`{$field}` = ?";
             }
-            $sql .= "WHERE " . join(' AND ', $whereParts);
+            $sql .= " WHERE " . join(' AND ', $whereParts);
         }
         $args[0] = $sql;
         $args = array_merge($args, array_values($params), array_values($where));

@@ -24,6 +24,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
              `code` char(15) NOT NULL,
              `name` varchar(200) NOT NULL,
              `price` decimal(10,2) unsigned DEFAULT NULL,
+             `order` int(11) unsigned DEFAULT 0,
              PRIMARY KEY (`id`),
              KEY `code` (`code`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -228,10 +229,11 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $data = [
             'code' => '003',
             'name' => 'Pan',
-            'price' => '22.9'
+            'price' => '22.9',
+            'order' => 1,
         ];
         $id = $this->db->insert('test', $data);
-        $res = $this->db->getAssoc('SELECT code, name, price FROM test WHERE code = ?', $data['code']);
+        $res = $this->db->getAssoc('SELECT code, name, price, `order` FROM test WHERE code = ?', $data['code']);
 
         $this->assertEquals($data, $res);
         $this->assertEquals(3, $id);
@@ -282,21 +284,22 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $data = [
             'code' => '002',
             'name' => 'Pan',
+            'order' => 2,
         ];
         $num = $this->db->update('test', $data, ['id' => 2]);
-        $res = $this->db->getAssoc('SELECT code, name FROM test WHERE id = 2');
+        $res = $this->db->getAssoc('SELECT code, name, `order` FROM test WHERE id = 2');
 
         $this->assertEquals($data, $res);
         $this->assertEquals(1, $num);
     }
 
-    public function testUpdateTwoWhere()
+    public function testUpdateMultipleWhere()
     {
         $data = [
             'code' => '002',
             'name' => 'Pan',
         ];
-        $num = $this->db->update('test', $data, ['id' => 2, 'code' => '002']);
+        $num = $this->db->update('test', $data, ['id' => 2, 'code' => '002', 'order' => 0]);
         $res = $this->db->getAssoc('SELECT code, name FROM test WHERE id = 2');
 
         $this->assertEquals($data, $res);
@@ -320,34 +323,35 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             'id' => 3,
             'code' => '003',
             'name' => 'Pan',
+            'order' => 5,
         ];
         $res = $this->db->insertUpdate('test', $insert);
-        $row = $this->db->getAssoc('SELECT id, code, name FROM test WHERE id = 3');
+        $row = $this->db->getAssoc('SELECT id, code, name, `order` FROM test WHERE id = 3');
 
         $this->assertEquals($insert, $row);
         $this->assertEquals(1, $res);
 
-        $update = ['price' => 5];
+        $update = ['price' => 5, 'order' => 1];
         $res = $this->db->insertUpdate('test', $insert, $update);
-        $price = $this->db->getAssoc('SELECT price FROM test WHERE id = 3');
+        $row = $this->db->getAssoc('SELECT price, `order` FROM test WHERE id = 3');
 
-        $this->assertEquals($update, $price);
+        $this->assertEquals($update, $row);
         $this->assertEquals(2, $res);
     }
 
     public function testMultiInsert()
     {
-        $fields = ['code', 'name', 'price'];
+        $fields = ['code', 'name', 'order'];
         $values = [
             ['003', 'Pan', 7],
-            ['004', 'Spoon', 3.5],
+            ['004', 'Spoon', 8],
         ];
 
         $res = $this->db->multiInsert('test', $fields, $values);
-        $rows = $this->db->getAll("SELECT code, name, price FROM test WHERE code IN ('003', '004')");
+        $rows = $this->db->getAll("SELECT code, name, `order` FROM test WHERE code IN ('003', '004')");
         $expected = [
-            ['code' => '003', 'name' => 'Pan',   'price' => 7],
-            ['code' => '004', 'name' => 'Spoon', 'price' => 3.5],
+            ['code' => '003', 'name' => 'Pan',   'order' => 7],
+            ['code' => '004', 'name' => 'Spoon', 'order' => 8],
         ];
 
         $this->assertEquals($expected, $rows);
