@@ -341,14 +341,8 @@ class Database
     public function update($table, $params, $where = array())
     {
         $table = $this->quoteIdentifier($table);
-        $sql = "UPDATE $table SET " . $this->createSet(array_keys($params));
-        if ($where) {
-            $whereParts = array();
-            foreach ($where as $field => $value) {
-                $whereParts[] = "`{$field}` = ?";
-            }
-            $sql .= " WHERE " . join(' AND ', $whereParts);
-        }
+        $sql = "UPDATE $table SET " . $this->createSet(array_keys($params)) . $this->createWhere($where);
+
         $args[0] = $sql;
         $args = array_merge($args, array_values($params), array_values($where));
         $sql = $this->parse($args);
@@ -405,6 +399,26 @@ class Database
             $sql .= '(' . join(', ', $row) . '), ';
         }
         $sql = rtrim($sql, ', ');
+        $this->rawQuery($sql);
+
+        return $this->affectedRows();
+    }
+
+    /**
+     * Deletes table rows
+     *
+     * @param string $table  Table name
+     * @param array  $where  UPDATE WHERE clause(s). Several conditions will be concatenated with AND keyword
+     * @return int   The number of affected rows
+     */
+    public function delete($table, $where = array())
+    {
+        $table = $this->quoteIdentifier($table);
+        $sql = "DELETE FROM $table" . $this->createWhere($where);
+
+        $args[0] = $sql;
+        $args = array_merge($args, array_values($where));
+        $sql = $this->parse($args);
         $this->rawQuery($sql);
 
         return $this->affectedRows();
@@ -584,16 +598,36 @@ class Database
     /**
      * Creates SET clause with placeholders
      *
-     * @param $fields
+     * @param array $fields
      * @return string
      */
     protected function createSet($fields)
     {
-        $set = array();
+        $parts = array();
         foreach ($fields as $field) {
-            $set[] = $this->quoteIdentifier($field) . ' = ?';
+            $parts[] = $this->quoteIdentifier($field) . ' = ?';
         }
 
-        return implode(',', $set);
+        return implode(',', $parts);
+    }
+
+    /**
+     * Creates WHERE clause with placeholders
+     *
+     * @param array $where
+     * @return string
+     */
+    protected function createWhere($where)
+    {
+        if (!$where) {
+            return '';
+        }
+
+        $parts = array();
+        foreach ($where as $field => $value) {
+            $parts[] = $this->quoteIdentifier($field) . ' = ?';
+        }
+
+        return " WHERE " . join(' AND ', $parts);
     }
 }

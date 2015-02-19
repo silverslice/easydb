@@ -194,21 +194,31 @@ class ModifyTest extends \PHPUnit_Framework_TestCase
 
         $table = 'test`_ident';
 
+        // test insert
         $insert = ['id' => 1, 'ide`nt' => 'test'];
         $this->db->insert($table, $insert);
         $ident = $this->db->getAssoc('SELECT id, `ide``nt` FROM `test``_ident` WHERE id = 1');
         $this->assertEquals($insert, $ident);
 
+        // test update
         $update = ['ide`nt' => 'pass'];
         $this->db->update($table, $update, ['id' => 1]);
         $ident = $this->db->getAssoc('SELECT `ide``nt` FROM `test``_ident` WHERE id = 1');
         $this->assertEquals($update, $ident);
 
+        $update = ['ide`nt' => 'order'];
+        $where  = ['ide`nt' => 'pass'];
+        $this->db->update($table, $update, $where);
+        $ident = $this->db->getAssoc('SELECT `ide``nt` FROM `test``_ident` WHERE id = 1');
+        $this->assertEquals($update, $ident);
+
+        // test insertUpdate
         $update = ['id' => 1, 'ide`nt' => 'update'];
         $this->db->insertUpdate($table, $update);
         $ident = $this->db->getAssoc('SELECT id, `ide``nt` FROM `test``_ident` WHERE id = 1');
         $this->assertEquals($update, $ident);
 
+        // test multiInsert
         $insert = [
             ['id' => 2, 'ide`nt' => 'first'],
             ['id' => 3, 'ide`nt' => 'second'],
@@ -216,5 +226,13 @@ class ModifyTest extends \PHPUnit_Framework_TestCase
         $this->db->multiInsert($table, array_keys($insert[0]), $insert);
         $idents = $this->db->getAll('SELECT id, `ide``nt` FROM `test``_ident` WHERE id > 1');
         $this->assertEquals($insert, $idents);
+
+        // test delete
+        $where = ['id' => 2, 'ide`nt' => 'first'];
+        $res = $this->db->delete($table, $where);
+        $ident = $this->db->getAssoc('SELECT id, `ide``nt` FROM `test``_ident` WHERE id = 2');
+
+        $this->assertNull($ident);
+        $this->assertEquals(1, $res);
     }
 }
