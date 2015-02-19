@@ -42,8 +42,9 @@ class ModifyTest extends \PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
-        $this->db->query('DROP TABLE IF EXISTS `test`;');
-        $this->db->query('DROP TABLE IF EXISTS `test_no_ai`;');
+        $this->db->query('DROP TABLE IF EXISTS `test`');
+        $this->db->query('DROP TABLE IF EXISTS `test_no_ai`');
+        $this->db->query('DROP TABLE IF EXISTS `test``_ident`');
     }
 
     public function testInsert()
@@ -178,5 +179,42 @@ class ModifyTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $rows);
         $this->assertEquals(2, $res);
+    }
+
+    public function testQuoteIdentifier()
+    {
+        $this->db->multiQuery("
+            DROP TABLE IF EXISTS `test``_ident`;
+            CREATE TABLE `test``_ident` (
+             `id` int(11) unsigned NOT NULL,
+             `ide``nt` varchar(100) NULL,
+             PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+
+        $table = 'test`_ident';
+
+        $insert = ['id' => 1, 'ide`nt' => 'test'];
+        $this->db->insert($table, $insert);
+        $ident = $this->db->getAssoc('SELECT id, `ide``nt` FROM `test``_ident` WHERE id = 1');
+        $this->assertEquals($insert, $ident);
+
+        $update = ['ide`nt' => 'pass'];
+        $this->db->update($table, $update, ['id' => 1]);
+        $ident = $this->db->getAssoc('SELECT `ide``nt` FROM `test``_ident` WHERE id = 1');
+        $this->assertEquals($update, $ident);
+
+        $update = ['id' => 1, 'ide`nt' => 'update'];
+        $this->db->insertUpdate($table, $update);
+        $ident = $this->db->getAssoc('SELECT id, `ide``nt` FROM `test``_ident` WHERE id = 1');
+        $this->assertEquals($update, $ident);
+
+        $insert = [
+            ['id' => 2, 'ide`nt' => 'first'],
+            ['id' => 3, 'ide`nt' => 'second'],
+        ];
+        $this->db->multiInsert($table, array_keys($insert[0]), $insert);
+        $idents = $this->db->getAll('SELECT id, `ide``nt` FROM `test``_ident` WHERE id > 1');
+        $this->assertEquals($insert, $idents);
     }
 }

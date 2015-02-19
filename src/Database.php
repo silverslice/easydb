@@ -82,7 +82,7 @@ class Database
         $res = $this->conn()->query($query);
 
         if (!$res) {
-            throw new Exception($query, $this->conn()->errno);
+            throw new Exception($this->conn()->error, $this->conn()->errno);
         }
 
         return $res;
@@ -314,8 +314,9 @@ class Database
      */
     public function insert($table, $params, $ignore = false)
     {
+        $table = $this->quoteIdentifier($table);
         $ignore = $ignore ? 'IGNORE' : '';
-        $sql = "INSERT $ignore INTO `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
+        $sql = "INSERT $ignore INTO $table SET " . $this->createSet(array_keys($params));
         $args[0] = $sql;
         $args = array_merge($args, array_values($params));
 
@@ -339,7 +340,8 @@ class Database
      */
     public function update($table, $params, $where = array())
     {
-        $sql = "UPDATE `$table` SET `". join('` = ?,`', array_keys($params)) ."` = ?";
+        $table = $this->quoteIdentifier($table);
+        $sql = "UPDATE $table SET " . $this->createSet(array_keys($params));
         if ($where) {
             $whereParts = array();
             foreach ($where as $field => $value) {
@@ -369,8 +371,9 @@ class Database
             $update = $insert;
         }
 
-        $sql = "INSERT INTO `$table` SET `". join('` = ?, `', array_keys($insert)) ."` = ? ON DUPLICATE KEY UPDATE `" .
-            join('` = ?, `', array_keys($update)) . '` = ?';
+        $table = $this->quoteIdentifier($table);
+        $sql = "INSERT INTO $table SET " . $this->createSet(array_keys($insert)) .
+               " ON DUPLICATE KEY UPDATE " . $this->createSet(array_keys($update));
         $args[0] = $sql;
         $args = array_merge($args, array_values($insert), array_values($update));
         $sql = $this->parse($args);
@@ -390,8 +393,11 @@ class Database
      */
     public function multiInsert($table, $fields, $data, $ignore = false)
     {
+        $table = $this->quoteIdentifier($table);
         $ignore = $ignore ? 'IGNORE' : '';
-        $sql = "INSERT $ignore INTO `$table` (`" . join('`,`', array_values($fields)) . "`) VALUES ";
+        $fields = array_map(array($this, 'quoteIdentifier'), $fields);
+
+        $sql = "INSERT $ignore INTO $table (" . join(', ', $fields) . ") VALUES ";
         foreach ($data as $i => $row) {
             foreach ($row as &$field) {
                 $field = $this->quoteSmart($field);
@@ -554,7 +560,7 @@ class Database
     }
 
     /**
-     * Quotes string
+     * Quotes float value
      *
      * @param string $value
      * @return string
@@ -562,5 +568,32 @@ class Database
     protected function quoteFloat($value)
     {
         return str_replace(',', '.', floatval($value));
+    }
+
+    /**
+     * Quotes an identifier
+     *
+     * @param string $value The identifier
+     * @return string The quoted identifier
+     */
+    protected function quoteIdentifier($value)
+    {
+        return '`' . str_replace('`', '``', $value) . '`';
+    }
+
+    /**
+     * Creates SET clause with placeholders
+     *
+     * @param $fields
+     * @return string
+     */
+    protected function createSet($fields)
+    {
+        $set = array();
+        foreach ($fields as $field) {
+            $set[] = $this->quoteIdentifier($field) . ' = ?';
+        }
+
+        return implode(',', $set);
     }
 }
