@@ -82,7 +82,7 @@ class Database
         $res = $this->conn()->query($query);
 
         if (!$res) {
-            throw new Exception($this->conn()->error, $this->conn()->errno);
+            throw new Exception($this->conn()->error, $this->conn()->errno, $query);
         }
 
         return $res;

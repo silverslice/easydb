@@ -157,6 +157,18 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $this->db->affectedRows());
     }
 
+    public function testExceptionQuery()
+    {
+        $exQuery = '';
+        try {
+            $this->db->query("SELECTT 1");
+        } catch (Exception $e) {
+            $exQuery = $e->getQuery();
+        }
+
+        $this->assertEquals('SELECTT 1', $exQuery);
+    }
+
     protected function getRowCount()
     {
         return $this->db->getOne('SELECT count(*) FROM test');
