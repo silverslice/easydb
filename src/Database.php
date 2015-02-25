@@ -117,7 +117,7 @@ class Database
 
         $query = array_shift($params);
 
-        return preg_replace_callback('#\?[isfaep]?#', function($m) use (&$params) {
+        return preg_replace_callback('#\?[isfaepu]?#', function($m) use (&$params) {
             if (!sizeof($params)) {
                 throw new Exception("Count of parameters doesn't correspond to the count of placeholders");
             }
@@ -146,6 +146,9 @@ class Database
                     break;
                 case '?a': // array
                     $str = $this->quoteArray($value);
+                    break;
+                case '?u': // column = value separated by comma
+                    $str = $this->createSet($value);
                     break;
             }
 
@@ -316,11 +319,8 @@ class Database
     {
         $table = $this->quoteIdentifier($table);
         $ignore = $ignore ? 'IGNORE' : '';
-        $sql = "INSERT $ignore INTO $table SET " . $this->createSet(array_keys($params));
-        $args[0] = $sql;
-        $args = array_merge($args, array_values($params));
+        $sql = "INSERT $ignore INTO $table SET " . $this->createSet($params);
 
-        $sql = $this->parse($args);
         $this->rawQuery($sql);
         $res = $this->insertId();
         if ($res === 0) { // no autoincrement field
@@ -341,11 +341,8 @@ class Database
     public function update($table, $params, $where = array())
     {
         $table = $this->quoteIdentifier($table);
-        $sql = "UPDATE $table SET " . $this->createSet(array_keys($params)) . $this->createWhere($where);
+        $sql = "UPDATE $table SET " . $this->createSet($params) . $this->createWhere($where);
 
-        $args[0] = $sql;
-        $args = array_merge($args, array_values($params), array_values($where));
-        $sql = $this->parse($args);
         $this->rawQuery($sql);
 
         return $this->affectedRows();
@@ -366,11 +363,9 @@ class Database
         }
 
         $table = $this->quoteIdentifier($table);
-        $sql = "INSERT INTO $table SET " . $this->createSet(array_keys($insert)) .
-               " ON DUPLICATE KEY UPDATE " . $this->createSet(array_keys($update));
-        $args[0] = $sql;
-        $args = array_merge($args, array_values($insert), array_values($update));
-        $sql = $this->parse($args);
+        $sql = "INSERT INTO $table SET " . $this->createSet($insert) .
+               " ON DUPLICATE KEY UPDATE " . $this->createSet($update);
+
         $this->rawQuery($sql);
 
         return $this->affectedRows();
@@ -416,9 +411,6 @@ class Database
         $table = $this->quoteIdentifier($table);
         $sql = "DELETE FROM $table" . $this->createWhere($where);
 
-        $args[0] = $sql;
-        $args = array_merge($args, array_values($where));
-        $sql = $this->parse($args);
         $this->rawQuery($sql);
 
         return $this->affectedRows();
@@ -596,19 +588,19 @@ class Database
     }
 
     /**
-     * Creates SET clause with placeholders
+     * Creates SET clause
      *
-     * @param array $fields
+     * @param array $pairs  Column-value pairs
      * @return string
      */
-    protected function createSet($fields)
+    protected function createSet($pairs)
     {
         $parts = array();
-        foreach ($fields as $field) {
-            $parts[] = $this->quoteIdentifier($field) . ' = ?';
+        foreach ($pairs as $field => $value) {
+            $parts[] = $this->quoteIdentifier($field) . ' = ' . $this->quoteSmart($value);
         }
 
-        return implode(',', $parts);
+        return implode(', ', $parts);
     }
 
     /**
@@ -625,7 +617,7 @@ class Database
 
         $parts = array();
         foreach ($where as $field => $value) {
-            $parts[] = $this->quoteIdentifier($field) . ' = ?';
+            $parts[] = $this->quoteIdentifier($field) . ' = ' . $this->quoteSmart($value);
         }
 
         return " WHERE " . join(' AND ', $parts);

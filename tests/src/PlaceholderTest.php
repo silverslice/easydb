@@ -67,6 +67,16 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("test ('w','o','w')", $str);
     }
 
+    public function testDbParseSet()
+    {
+        $str = $this->db->parse('test ?u', [
+            'time' => new Expression('NOW()'),
+            'field`2' => '5',
+            'int' => 1
+        ]);
+        $this->assertEquals("test `time` = NOW(), `field``2` = '5', `int` = 1", $str);
+    }
+
     public function testDbParseDefaultString()
     {
         $str = $this->db->parse('test ?', "1'");
