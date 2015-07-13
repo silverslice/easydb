@@ -19,57 +19,57 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
         $this->db = new Database($options);
     }
 
-    public function testDbParseInt()
+    public function testDbPrepareInt()
     {
-        $str = $this->db->parse('test ?i', '1');
+        $str = $this->db->prepare('test ?i', '1');
         $this->assertEquals("test 1", $str);
     }
 
-    public function testDbParseString()
+    public function testDbPrepareString()
     {
-        $str = $this->db->parse('test ?s', '1');
+        $str = $this->db->prepare('test ?s', '1');
         $this->assertEquals("test '1'", $str);
     }
 
-    public function testDbParseFloat()
+    public function testDbPrepareFloat()
     {
-        $str = $this->db->parse('test ?f', '1.2');
+        $str = $this->db->prepare('test ?f', '1.2');
         $this->assertEquals("test 1.2", $str);
     }
 
-    public function testDbParseEscape()
+    public function testDbPrepareEscape()
     {
-        $str = $this->db->parse('test ?e', "1'2");
+        $str = $this->db->prepare('test ?e', "1'2");
         $this->assertEquals("test 1\\'2", $str);
     }
 
-    public function testDbParsePart()
+    public function testDbPreparePart()
     {
-        $str = $this->db->parse('test ?p', "go");
+        $str = $this->db->prepare('test ?p', "go");
         $this->assertEquals("test go", $str);
     }
 
-    public function testDbParseArray()
+    public function testDbPrepareArray()
     {
-        $str = $this->db->parse('test (?a)', [1, 2, 3]);
+        $str = $this->db->prepare('test (?a)', [1, 2, 3]);
         $this->assertEquals("test (1,2,3)", $str);
     }
 
-    public function testDbParseArrayEmpty()
+    public function testDbPrepareArrayEmpty()
     {
-        $str = $this->db->parse('test IN (?a)', []);
+        $str = $this->db->prepare('test IN (?a)', []);
         $this->assertEquals("test IN (NULL)", $str);
     }
 
-    public function testDbParseArrayString()
+    public function testDbPrepareArrayString()
     {
-        $str = $this->db->parse('test (?a)', ['w', 'o', 'w']);
+        $str = $this->db->prepare('test (?a)', ['w', 'o', 'w']);
         $this->assertEquals("test ('w','o','w')", $str);
     }
 
-    public function testDbParseSet()
+    public function testDbPrepareSet()
     {
-        $str = $this->db->parse('test ?u', [
+        $str = $this->db->prepare('test ?u', [
             'time' => new Expression('NOW()'),
             'field`2' => '5',
             'int' => 1
@@ -77,39 +77,39 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("test `time` = NOW(), `field``2` = '5', `int` = 1", $str);
     }
 
-    public function testDbParseDefaultString()
+    public function testDbPrepareDefaultString()
     {
-        $str = $this->db->parse('test ?', "1'");
+        $str = $this->db->prepare('test ?', "1'");
         $this->assertEquals("test '1\\''", $str);
     }
 
-    public function testDbParseDefaultInt()
+    public function testDbPrepareDefaultInt()
     {
-        $str = $this->db->parse('test ?', 1);
+        $str = $this->db->prepare('test ?', 1);
         $this->assertEquals("test 1", $str);
     }
 
-    public function testDbParseDefaultNull()
+    public function testDbPrepareDefaultNull()
     {
-        $str = $this->db->parse('test ?', null);
+        $str = $this->db->prepare('test ?', null);
         $this->assertEquals("test null", $str);
     }
 
-    public function testDbParseExpression()
+    public function testDbPrepareExpression()
     {
-        $str = $this->db->parse('test ?', new Expression('NOW()'));
+        $str = $this->db->prepare('test ?', new Expression('NOW()'));
         $this->assertEquals("test NOW()", $str);
     }
 
-    public function testDbParseUnknown()
+    public function testDbPrepareUnknown()
     {
-        $str = $this->db->parse('test ?x', 1);
+        $str = $this->db->prepare('test ?x', 1);
         $this->assertEquals("test 1x", $str);
     }
 
-    public function testDbParseSeveral()
+    public function testDbPrepareSeveral()
     {
-        $str = $this->db->parse('test ? OR ?i OR (?a)', '1', '2', ['3', '4']);
+        $str = $this->db->prepare('test ? OR ?i OR (?a)', '1', '2', ['3', '4']);
         $this->assertEquals("test '1' OR 2 OR ('3','4')", $str);
     }
 
@@ -118,6 +118,6 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
      */
     public function testNotEnoughParams()
     {
-        $this->db->parse('test ? OR ?', 1);
+        $this->db->prepare('test ? OR ?', 1);
     }
 }

@@ -98,7 +98,7 @@ class Database
      */
     public function query()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
 
         return $this->rawQuery($sql);
     }
@@ -109,7 +109,7 @@ class Database
      * @param mixed  ...$params  Sql query and values to match placeholders in the query
      * @return string
      */
-    public function parse($params)
+    public function prepare($params)
     {
         if (!is_array($params)) {
             $params = func_get_args();
@@ -207,7 +207,7 @@ class Database
      */
     public function getOne()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
         $res = $this->rawQuery($sql);
         $row = $res->fetch_row();
         if (is_null($row)) {
@@ -224,7 +224,7 @@ class Database
      */
     public function getAssoc()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
         $res = $this->rawQuery($sql);
 
         return $res->fetch_assoc();
@@ -237,7 +237,7 @@ class Database
      */
     public function getAll()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
         $res = $this->rawQuery($sql);
 
         $rows = array();
@@ -255,7 +255,7 @@ class Database
      */
     public function getColumn()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
         $res = $this->rawQuery($sql);
 
         $rows = array();
@@ -275,7 +275,7 @@ class Database
      */
     public function getPairs()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
         $res = $this->rawQuery($sql);
 
         $rows = array();
@@ -295,7 +295,7 @@ class Database
      */
     public function getAllKeyed()
     {
-        $sql = $this->parse(func_get_args());
+        $sql = $this->prepare(func_get_args());
         $res = $this->rawQuery($sql);
 
         $rows = array();
