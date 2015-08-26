@@ -113,7 +113,41 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             INSERT INTO test (code, name)
             VALUES ('005', 'Pan2');
         ");
-        $this->assertEquals(5, $this->getRowCount());
+
+        // test multiQuery correctly free results
+        $this->db->multiQuery("
+            SELECT * FROM test;
+            SELECT name FROM test;
+            INSERT INTO test (code, name)
+            VALUES ('006', 'Pan3');
+            SELECT code FROM test;
+        ");
+
+        $this->db->query("
+            INSERT INTO test (code, name)
+            VALUES ('007', 'Pan4');
+        ");
+
+        $this->assertEquals(7, $this->getRowCount());
+
+
+        // test multiQuery correctly free results with error in query
+        try {
+            $this->db->multiQuery("
+                SELECT * FROM test;
+                SELECT name1 FROM test;
+                INSERT INTO test (code, name)
+                VALUES ('008', 'Pan8');
+                SELECT code FROM test;
+            ");
+        } catch (Exception $e) {
+            $this->db->query("
+                INSERT INTO test (code, name)
+                VALUES ('008', 'Pan8');
+            ");
+        }
+
+        $this->assertEquals(8, $this->getRowCount());
     }
 
     /**

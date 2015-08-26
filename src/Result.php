@@ -24,6 +24,7 @@ class Result
     public function fetchOne()
     {
         $row = $this->result->fetch_row();
+        $this->result->free();
         if (is_null($row)) {
             return null;
         }
@@ -62,6 +63,7 @@ class Result
         while ($ar = $this->result->fetch_assoc()) {
             $rows[] = $ar;
         }
+        $this->result->free();
 
         return $rows;
     }
@@ -77,6 +79,7 @@ class Result
         while ($ar = $this->result->fetch_row()) {
             $rows[] = $ar[0];
         }
+        $this->result->free();
 
         return $rows;
     }
@@ -94,6 +97,7 @@ class Result
         while ($ar = $this->result->fetch_row()) {
             $rows[$ar[0]] = $ar[1];
         }
+        $this->result->free();
 
         return $rows;
     }
@@ -112,7 +116,16 @@ class Result
             $key = array_shift($ar);
             $rows[$key] = $ar;
         }
+        $this->result->free();
 
         return $rows;
+    }
+
+    /**
+     * Frees the memory associated with a result
+     */
+    public function free()
+    {
+        $this->result->free();
     }
 }

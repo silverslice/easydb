@@ -174,12 +174,22 @@ class Database
         if (!$res) {
             throw new Exception($this->conn()->error, $this->conn()->errno);
         }
-        while ($conn->more_results()) {
-            $res = $conn->next_result();
-            if (!$res) {
-                throw new Exception($this->conn()->error, $this->conn()->errno);
+
+        $first = true;
+        do {
+            if (!$first) {
+                $success = $conn->next_result();
+                if (!$success) {
+                    throw new Exception($this->conn()->error, $this->conn()->errno);
+                }
             }
-        }
+
+            if ($result = $conn->use_result()) {
+                $result->free();
+            }
+            $first = false;
+
+        } while ($conn->more_results());
 
         return true;
     }
@@ -224,8 +234,11 @@ class Database
     public function getAssoc()
     {
         $sql = $this->prepare(func_get_args());
+        $result = $this->rawQuery($sql);
+        $data = $result->fetchAssoc();
+        $result->free();
 
-        return $this->rawQuery($sql)->fetchAssoc();
+        return $data;
     }
 
     /**
