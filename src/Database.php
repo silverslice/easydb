@@ -335,7 +335,7 @@ class Database
     }
 
     /**
-     * Inserts or updates table row using INSERT ... ON DUPLICATE KEY UPDATE clause
+     * Inserts or updates table row using INSERT... ON DUPLICATE KEY UPDATE clause
      *
      * @param string  $table   Table name
      * @param array   $insert  Column-value pairs to insert
@@ -449,6 +449,17 @@ class Database
             $this->rollback();
             return false;
         }
+    }
+
+    /**
+     * Returns new Expression object
+     *
+     * @param string $str  The string of the SQL expression
+     * @return Expression
+     */
+    public function expression($str)
+    {
+        return new Expression($str);
     }
 
 
