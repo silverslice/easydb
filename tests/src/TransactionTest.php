@@ -73,7 +73,7 @@ class TransactionTest extends \PHPUnit_Framework_TestCase
 
     public function testTransactionWrapper()
     {
-        $this->db->transaction(function(){
+        $this->db->transaction(function () {
             $this->db->query("INSERT INTO test (id, code, price) VALUES (3003, '1', 1)");
             $this->db->query("INSERT INTO test (id, code, price) VALUES (3004, '1', 1)");
         });
@@ -85,7 +85,7 @@ class TransactionTest extends \PHPUnit_Framework_TestCase
     public function testTransactionWrapperFail()
     {
         $this->db->query("INSERT INTO test (id, code, price) VALUES (3004, '1', 1)");
-        $res = $this->db->transaction(function(){
+        $res = $this->db->transaction(function () {
             $this->db->query("INSERT INTO test (id, code, price) VALUES (3004, '1', 1)");
         });
 

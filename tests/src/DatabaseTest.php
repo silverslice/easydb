@@ -191,16 +191,20 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $this->db->affectedRows());
     }
 
-    public function testExceptionQuery()
+    public function testExceptionData()
     {
-        $exQuery = '';
+        $query = '';
         try {
             $this->db->query("SELECTT 1");
         } catch (Exception $e) {
-            $exQuery = $e->getQuery();
+            $code = $e->getCode();
+            $message = $e->getMessage();
+            $query = $e->getQuery();
         }
 
-        $this->assertEquals('SELECTT 1', $exQuery);
+        $this->assertEquals(1064, $code);
+        $this->assertEquals('Error 1064: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near \'SELECTT 1\' at line 1"; Query = "SELECTT 1"', $message);
+        $this->assertEquals('SELECTT 1', $query);
     }
 
     protected function getRowCount()

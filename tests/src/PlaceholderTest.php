@@ -97,7 +97,7 @@ class PlaceholderTest extends \PHPUnit_Framework_TestCase
 
     public function testDbPrepareExpression()
     {
-        $str = $this->db->prepare('test ?', new Expression('NOW()'));
+        $str = $this->db->prepare('test ?', $this->db->expression('NOW()'));
         $this->assertEquals("test NOW()", $str);
     }
 
