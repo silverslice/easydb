@@ -73,7 +73,7 @@ class Database
      * Performs a query on the database directly
      *
      * @param $query
-     * @return bool | \mysqli_result
+     * @return bool|Result
      *
      * @throws Exception
      */
@@ -85,6 +85,10 @@ class Database
             throw new Exception($this->conn()->error, $this->conn()->errno, $query);
         }
 
+        if ($res instanceof \mysqli_result) {
+            return new Result($res);
+        }
+
         return $res;
     }
 
@@ -94,7 +98,7 @@ class Database
      * param string    $query   Sql query
      * param mixed  ...$params  Values to match placeholders in the query
      *
-     * @return bool | \mysqli_result
+     * @return bool|Result
      */
     public function query()
     {
@@ -201,20 +205,15 @@ class Database
     }
 
     /**
-     * Peforms query and fetchs first cell for the first result row
+     * Peforms query and fetchs first cell from the first result row
      *
      * @return string|null
      */
     public function getOne()
     {
         $sql = $this->prepare(func_get_args());
-        $res = $this->rawQuery($sql);
-        $row = $res->fetch_row();
-        if (is_null($row)) {
-            return null;
-        }
 
-        return $row[0];
+        return $this->rawQuery($sql)->fetchOne();
     }
 
     /**
@@ -225,9 +224,8 @@ class Database
     public function getAssoc()
     {
         $sql = $this->prepare(func_get_args());
-        $res = $this->rawQuery($sql);
 
-        return $res->fetch_assoc();
+        return $this->rawQuery($sql)->fetchAssoc();
     }
 
     /**
@@ -238,36 +236,24 @@ class Database
     public function getAll()
     {
         $sql = $this->prepare(func_get_args());
-        $res = $this->rawQuery($sql);
 
-        $rows = array();
-        while ($ar = $res->fetch_assoc()) {
-            $rows[] = $ar;
-        }
-
-        return $rows;
+        return $this->rawQuery($sql)->fetchAll();
     }
 
     /**
-     * Peforms query and fetchs one column in result set as an enumerate array
+     * Peforms query and fetchs one column from the result set as an enumerate array
      *
      * @return array
      */
     public function getColumn()
     {
         $sql = $this->prepare(func_get_args());
-        $res = $this->rawQuery($sql);
 
-        $rows = array();
-        while ($ar = $res->fetch_row()) {
-            $rows[] = $ar[0];
-        }
-
-        return $rows;
+        return $this->rawQuery($sql)->fetchColumn();
     }
 
     /**
-     * Peforms query and fetchs key-value pairs in result set.
+     * Peforms query and fetchs key-value pairs from the result set.
      * The key of the associative array is taken from the first column returned by the query.
      * The value is taken from the second column returned by the query
      *
@@ -276,18 +262,12 @@ class Database
     public function getPairs()
     {
         $sql = $this->prepare(func_get_args());
-        $res = $this->rawQuery($sql);
 
-        $rows = array();
-        while ($ar = $res->fetch_row()) {
-            $rows[$ar[0]] = $ar[1];
-        }
-
-        return $rows;
+        return $this->rawQuery($sql)->fetchPairs();
     }
 
     /**
-     * Peforms query and fetchs key-values pairs in result set.
+     * Peforms query and fetchs key-values pairs from the result set.
      * The key of the associative array is taken from the first column returned by the query.
      * The value is an array combined from the other columns
      *
@@ -296,15 +276,8 @@ class Database
     public function getAllKeyed()
     {
         $sql = $this->prepare(func_get_args());
-        $res = $this->rawQuery($sql);
 
-        $rows = array();
-        while ($ar = $res->fetch_assoc()) {
-            $key = array_shift($ar);
-            $rows[$key] = $ar;
-        }
-
-        return $rows;
+        return $this->rawQuery($sql)->fetchAllKeyed();
     }
 
     /**

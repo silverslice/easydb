@@ -127,4 +127,11 @@ class SelectTest extends \PHPUnit_Framework_TestCase
         ];
         $this->assertEquals($expect, $res);
     }
+
+    public function testFetchRow()
+    {
+        $res = $this->db->query('SELECT code, name FROM test WHERE id = 1')->fetchRow();
+        $expect = ['001', 'Cup'];
+        $this->assertEquals($expect, $res);
+    }
 }
