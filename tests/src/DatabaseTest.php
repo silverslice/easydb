@@ -203,7 +203,9 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertEquals(1064, $code);
-        $this->assertEquals('Error 1064: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near \'SELECTT 1\' at line 1"; Query = "SELECTT 1"', $message);
+        $this->assertEquals('Error 1064: "You have an error in your SQL syntax; check the manual that corresponds ' .
+            'to your MySQL server version for the right syntax to use near ' .
+            '\'SELECTT 1\' at line 1"; Query = "SELECTT 1"', $message);
         $this->assertEquals('SELECTT 1', $query);
     }
 

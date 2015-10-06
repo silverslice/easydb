@@ -7,7 +7,7 @@ namespace Silverslice\EasyDb;
  *
  * @package Silverslice\EasyDb
  */
-class Exception extends \Exception 
+class Exception extends \Exception
 {
     protected $query;
 

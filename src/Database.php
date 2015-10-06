@@ -121,7 +121,7 @@ class Database
 
         $query = array_shift($params);
 
-        return preg_replace_callback('#\?[isfaepu]?#', function($m) use (&$params) {
+        return preg_replace_callback('#\?[isfaepu]?#', function ($m) use (&$params) {
             if (!sizeof($params)) {
                 throw new Exception("Count of parameters doesn't correspond to the count of placeholders");
             }
@@ -475,8 +475,15 @@ class Database
         if ($this->mysqlOptions) {
             $this->setOptions($conn, $this->mysqlOptions);
         }
-        $res = @$conn->real_connect($options['host'], $options['username'], $options['password'],
-            $options['dbname'], $options['port'], $options['socket'], $options['flags']);
+        $res = @$conn->real_connect(
+            $options['host'],
+            $options['username'],
+            $options['password'],
+            $options['dbname'],
+            $options['port'],
+            $options['socket'],
+            $options['flags']
+        );
         if ($res === false) {
             throw new Exception($conn->connect_errno . ': ' . $conn->connect_error);
         }
