@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ruleset name="EasyDb">
+    <description>The coding standard for EasyDb</description>
+
+    <file>./src</file>
+    <file>./tests/src</file>
+
+    <rule ref="PSR1"/>
+    <rule ref="PSR2"/>
+</ruleset>
