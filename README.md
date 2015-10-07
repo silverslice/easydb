@@ -1,5 +1,7 @@
 # EasyDb
 
+[![Coverage Status](https://coveralls.io/repos/silverslice/easydb/badge.svg?branch=master&service=github)](https://coveralls.io/github/silverslice/easydb?branch=master)
+
 EasyDb is a simple wrapper over standart myslqi extension.
 
 What does this library offer you?
