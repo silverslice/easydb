@@ -10,9 +10,13 @@ install:
   # Composer
   - composer self-update
   - composer install -n --prefer-source
+  # Database
+    - mysql -e 'CREATE DATABASE testdb;'
 before_script:
   # Directories
   - mkdir .reports
+  # Config file
+  - cp tests/src/config.dist.php tests/src/config.php
 script:
   # Tests
   - php vendor/bin/phpunit --configuration ./phpunit.xml --coverage-clover=.reports/clover.xml --coverage-xml=.reports/coverage
